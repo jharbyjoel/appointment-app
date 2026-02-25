@@ -4,21 +4,21 @@ const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const { DynamoDBDocumentClient, PutCommand } = require("@aws-sdk/lib-dynamodb")
 
 exports.handler = async (event, context) => {
-    console.log('## EVENT RECEIVED ##');
+    console.log("## EVENT RECEIVED ##");
     console.log(JSON.stringify(event, null, 2));
     try {
         const createAppointmentResponse = await CreateAppointment(event);
-        console.log('CreateAppointment succeeded', createAppointmentResponse);
+        console.log("CreateAppointment succeeded", createAppointmentResponse);
         return {
             statusCode: 201,
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                message: 'Appointment created',
+                message: "Appointment created",
                 data: createAppointmentResponse,
             }),
         };
     } catch (err) {
-        console.error('CreateAppointment failed', err);
+        console.error("CreateAppointment failed", err);
         return {
             statusCode: err.statusCode,
             headers: { "Content-Type": "application/json" },
@@ -38,7 +38,7 @@ const CreateAppointment = async (event) => {
 const ValidateData = (appointmentDetails) => {
     const { customerEmail, customerName, phone, startTime, endTime, status, notes, location } = appointmentDetails;
     if (!customerEmail || !customerName || !phone || !startTime || !endTime || !status || !notes) {
-        throw new BadRequestError("Missing a required field!")
+        throw new BadRequestError(ERROR_MESSAGES.MISSING_REQUIRED_FIELDS);
     }
 }
 
