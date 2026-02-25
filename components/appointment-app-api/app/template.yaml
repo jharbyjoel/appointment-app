@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Appointment App API
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: nodejs22.x
+    Environment:
+      Variables:
+        NODE_ENV: local
+        APPOINTMENTS_TABLE_NAME: appointments
+
+Resources:
+  CreateAppointmentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambdas/create-appointment/create-appointment.handler
+      CodeUri: .
+      Description: Lambda function to create appointments
+      Events:
+        CreateAppointment:
+          Type: Api
+          Properties:
+            Path: /appointments
+            Method: POST
+
+  DeleteAppointmentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambdas/delete-appointment/delete-appointment.handler
+      CodeUri: .
+      Description: Lambda function to delete appointments
+      Events:
+        CreateAppointment:
+          Type: Api
+          Properties:
+            Path: /appointments
+            Method: DELETE
+
+  EditAppointmentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambdas/edit-appointment/edit-appointment.handler
+      CodeUri: .
+      Description: Lambda function to edit appointments
+      Events:
+        CreateAppointment:
+          Type: Api
+          Properties:
+            Path: /appointments
+            Method: PUT     
