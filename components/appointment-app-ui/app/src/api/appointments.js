@@ -1,4 +1,5 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3007"
+export const TENANT_ID = import.meta.env.VITE_TENANT_ID ?? "default"
 
 async function handleResponse(response) {
   const json = await response.json()
@@ -8,13 +9,16 @@ async function handleResponse(response) {
   return json
 }
 
-export async function getAppointmentsByDate(date) {
-  const response = await fetch(`${API_BASE}/appointments/${date}`)
+// All API helpers accept an explicit tenantId so callers can override if needed.
+// The default is the value read from VITE_TENANT_ID at startup.
+
+export async function getAppointmentsByDate(date, tenantId = TENANT_ID) {
+  const response = await fetch(`${API_BASE}/tenants/${tenantId}/appointments/${date}`)
   return handleResponse(response)
 }
 
-export async function createAppointment(data) {
-  const response = await fetch(`${API_BASE}/appointments`, {
+export async function createAppointment(data, tenantId = TENANT_ID) {
+  const response = await fetch(`${API_BASE}/tenants/${tenantId}/appointments`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -22,8 +26,8 @@ export async function createAppointment(data) {
   return handleResponse(response)
 }
 
-export async function editAppointment(data) {
-  const response = await fetch(`${API_BASE}/appointments`, {
+export async function editAppointment(data, tenantId = TENANT_ID) {
+  const response = await fetch(`${API_BASE}/tenants/${tenantId}/appointments`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -31,8 +35,8 @@ export async function editAppointment(data) {
   return handleResponse(response)
 }
 
-export async function deleteAppointment(data) {
-  const response = await fetch(`${API_BASE}/appointments`, {
+export async function deleteAppointment(data, tenantId = TENANT_ID) {
+  const response = await fetch(`${API_BASE}/tenants/${tenantId}/appointments`, {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -54,10 +58,10 @@ function generateDateRange(startDate, endDate) {
 
 // Fetches all appointments across a date range concurrently and returns a flat
 // array of unique appointments de-duplicated by PK+SK.
-export async function getAppointmentsForDateRange(startDate, endDate) {
+export async function getAppointmentsForDateRange(startDate, endDate, tenantId = TENANT_ID) {
   const dates = generateDateRange(startDate, endDate)
   const results = await Promise.allSettled(
-    dates.map((date) => getAppointmentsByDate(date))
+    dates.map((date) => getAppointmentsByDate(date, tenantId))
   )
   const allAppointments = results
     .filter((r) => r.status === "fulfilled")
