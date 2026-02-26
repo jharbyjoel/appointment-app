@@ -1,34 +1,22 @@
-import {
-  NavigationMenu,
-  NavigationMenuList,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  navigationMenuTriggerStyle,
-} from "./components/ui/navbar/navigation-menu"
+import { BrowserRouter, Routes, Route } from "react-router-dom"
+import RootLayout from "./components/layout/root-layout"
+import HomePage from "./pages/home-page"
+import AppointmentsPage from "./pages/appointments-page"
+import NewAppointmentPage from "./pages/new-appointment-page"
+import CustomersPage from "./pages/customers-page"
 
 function App() {
   return (
-    <div className="">
-      <NavigationMenu>
-        <NavigationMenuList>
-          <NavigationMenuItem>
-            <NavigationMenuLink className={navigationMenuTriggerStyle()} href="/">
-              Home
-            </NavigationMenuLink>
-          </NavigationMenuItem>
-          <NavigationMenuItem>
-            <NavigationMenuLink className={navigationMenuTriggerStyle()} href="/appointments">
-              Appointments
-            </NavigationMenuLink>
-          </NavigationMenuItem>
-          <NavigationMenuItem>
-            <NavigationMenuLink className={navigationMenuTriggerStyle()} href="/customers">
-              Customers
-            </NavigationMenuLink>
-          </NavigationMenuItem>
-        </NavigationMenuList>
-      </NavigationMenu>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route element={<RootLayout />}>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/appointments" element={<AppointmentsPage />} />
+          <Route path="/appointments/new" element={<NewAppointmentPage />} />
+          <Route path="/customers" element={<CustomersPage />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   )
 }
 
