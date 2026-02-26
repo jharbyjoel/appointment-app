@@ -24,6 +24,19 @@ Resources:
           Properties:
             Path: /appointments
             Method: POST
+  
+  GetAppointmentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambdas/get-appointment/get-appointment.handler
+      CodeUri: .
+      Description: Lambda function to get appointments
+      Events:
+        GetAppointment:
+          Type: Api
+          Properties:
+            Path: /appointments/{date}
+            Method: GET
 
   DeleteAppointmentFunction:
     Type: AWS::Serverless::Function
