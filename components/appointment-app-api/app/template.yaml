@@ -9,20 +9,69 @@ Globals:
     Environment:
       Variables:
         NODE_ENV: local
-        APPOINTMENTS_TABLE_NAME: appointments
+        APPOINTMENTS_TABLE_NAME: !Ref AppointmentsTable
+  Api:
+    Cors:
+      AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+      AllowHeaders: "'Content-Type'"
+      AllowOrigin: "'*'"
 
 Resources:
+  AppointmentsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: appointments
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: tenantDateKey   # "TENANT#<id>#DATE#<YYYY-MM-DD>"
+          AttributeType: S
+        - AttributeName: startTime
+          AttributeType: S
+        - AttributeName: customerEmail
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        # Query all appointments for a tenant on a specific date
+        - IndexName: DateIndex
+          KeySchema:
+            - AttributeName: tenantDateKey
+              KeyType: HASH
+            - AttributeName: startTime
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        # Query all appointments for a specific customer within a tenant
+        - IndexName: EmailIndex
+          KeySchema:
+            - AttributeName: customerEmail
+              KeyType: HASH
+            - AttributeName: startTime
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
   CreateAppointmentFunction:
     Type: AWS::Serverless::Function
     Properties:
       Handler: lambdas/create-appointment/create-appointment.handler
       CodeUri: .
       Description: Lambda function to create appointments
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref AppointmentsTable
       Events:
         CreateAppointment:
           Type: Api
           Properties:
-            Path: /appointments
+            Path: /tenants/{tenantId}/appointments
             Method: POST
   
   GetAppointmentFunction:
@@ -31,11 +80,14 @@ Resources:
       Handler: lambdas/get-appointment/get-appointment.handler
       CodeUri: .
       Description: Lambda function to get appointments
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref AppointmentsTable
       Events:
         GetAppointment:
           Type: Api
           Properties:
-            Path: /appointments/{date}
+            Path: /tenants/{tenantId}/appointments/{date}
             Method: GET
 
   DeleteAppointmentFunction:
@@ -44,11 +96,14 @@ Resources:
       Handler: lambdas/delete-appointment/delete-appointment.handler
       CodeUri: .
       Description: Lambda function to delete appointments
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref AppointmentsTable
       Events:
-        CreateAppointment:
+        DeleteAppointment:
           Type: Api
           Properties:
-            Path: /appointments
+            Path: /tenants/{tenantId}/appointments
             Method: DELETE
 
   EditAppointmentFunction:
@@ -57,9 +112,12 @@ Resources:
       Handler: lambdas/edit-appointment/edit-appointment.handler
       CodeUri: .
       Description: Lambda function to edit appointments
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref AppointmentsTable
       Events:
-        CreateAppointment:
+        EditAppointment:
           Type: Api
           Properties:
-            Path: /appointments
+            Path: /tenants/{tenantId}/appointments
             Method: PUT     

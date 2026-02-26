@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from "react"
-import { getAppointmentsByDate } from "@/api/appointments"
+import { getAppointmentsByDate, TENANT_ID } from "@/api/appointments"
 
-export function useAppointments(date) {
+// tenantId defaults to the value read from VITE_TENANT_ID at startup.
+export function useAppointments(date, tenantId = TENANT_ID) {
   const [appointments, setAppointments] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -11,14 +12,14 @@ export function useAppointments(date) {
     setIsLoading(true)
     setError(null)
     try {
-      const result = await getAppointmentsByDate(date)
+      const result = await getAppointmentsByDate(date, tenantId)
       setAppointments(result.data?.Items ?? [])
     } catch (err) {
       setError(err.message)
     } finally {
       setIsLoading(false)
     }
-  }, [date])
+  }, [date, tenantId])
 
   useEffect(() => {
     fetchAppointments()
